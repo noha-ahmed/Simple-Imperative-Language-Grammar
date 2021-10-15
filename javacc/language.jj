@@ -1,0 +1,93 @@
+
+options {
+STATIC=false;
+}
+
+PARSER_BEGIN(Language)
+package javacc;
+
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+
+public class Language {
+  
+    public static void main(String[] args) throws ParseException ,UnsupportedEncodingException {
+    //  StringReader in = new StringReader("a := 8");
+      Language language=new Language(System.in);
+      language.parseCommand();
+       }
+    
+}
+
+PARSER_END(Language)
+
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+TOKEN : { < False:"ff"> }
+TOKEN : { < Var : (["a"-"f"])+ > }
+TOKEN : { < NUM: (["0"-"9"])+ > }
+TOKEN : { < symbA :"+" | "-" > }
+TOKEN : { < equality :"==" > }
+TOKEN : { < and : "^" > }
+TOKEN : { < neg :"!" > }
+TOKEN : { < skipp:"skip"> }
+TOKEN : { < equal:":="> }
+TOKEN : { < semicolon:";"> }
+TOKEN : { < If:"if"> }
+TOKEN : { < Else:"else"> }
+TOKEN : { < While:"while"> }
+TOKEN : { < Do:"do"> }
+TOKEN : { < Then:"then"> }
+TOKEN : { < True:"tt"> }
+TOKEN : { < left:"("> }
+TOKEN : { < right:")"> }
+
+boolean parseCommand():
+{ }
+{
+    intermediateCommand()  <EOF>
+  { System.out.println("Parsed correctly!"); 
+     return true;
+     }
+     
+}
+
+void intermediateCommand(): { }
+{
+ command()[<semicolon > intermediateCommand()]
+}
+
+void command(): { }
+{
+  < skipp > 
+|  < Var > <equal> AExp()
+|  < If > BExp() < Then > intermediateCommand() < Else > intermediateCommand()
+| < While > BExp() < Do > intermediateCommand()
+
+}
+
+void AExp(): { }
+{
+  
+    < NUM >
+   | < Var >
+   |  <left>AExp()< symbA > AExp() <right>
+   
+ }
+
+ void BExp(): { }
+{
+   <True>
+ | <False>
+ | <neg >BExp()
+ | LOOKAHEAD(<left> AExp()) <left> AExp()<equality> AExp()<right>
+ | <left> BExp()<and> BExp()<right>
+ }
+   
